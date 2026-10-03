@@ -167,10 +167,21 @@ var keyNames = map[rune]string{
 	KeyIsoLevel3Shift: "isolevel3shift", KeyIsoLevel5Shift: "isolevel5shift",
 }
 
+var keyCodes = map[string]rune{}
+
 func init() {
 	for i := 0; i < 35; i++ {
 		keyNames[KeyF1+rune(i)] = "f" + strconv.Itoa(i+1)
 	}
+	for code, name := range keyNames {
+		keyCodes[name] = code
+	}
+}
+
+// KeyCode returns the key code of a lowercase key name as KeyName reports it.
+func KeyCode(name string) (rune, bool) {
+	code, ok := keyCodes[name]
+	return code, ok
 }
 
 // KeyName returns the lowercase name of a named key, or "" for other codes.
