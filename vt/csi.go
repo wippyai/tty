@@ -16,6 +16,10 @@ const (
 )
 
 // count returns parameter i as a repeat count: missing or zero selects 1.
+
+// primaryAttributes answers DA1 and DECID: a VT220-class terminal with ANSI color.
+const primaryAttributes = "\x1b[?62;22c"
+
 func count(p parser.Params, i int) int {
 	if n := p.Get(i, 1); n > 0 {
 		return n
@@ -96,7 +100,7 @@ func (t *Terminal) csiPlain(p parser.Params, final byte) {
 		t.repeat(count(p, 0))
 	case 'c':
 		if p.Get(0, 0) == 0 {
-			t.replyString("\x1b[?62;22c")
+			t.replyString(primaryAttributes)
 		}
 	case 'd':
 		s.MoveTo(s.Cursor().X, count(p, 0)-1)

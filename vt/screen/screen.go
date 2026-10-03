@@ -76,6 +76,9 @@ type Screen interface {
 	MoveBy(dx, dy int) // relative, clamped to the scrolling region
 	SaveCursor()       // DECSC
 	RestoreCursor()    // DECRC
+	// ForgetSavedCursor empties the active buffer's saved cursor, so the next
+	// RestoreCursor homes the cursor with the default pen (DECSTR).
+	ForgetSavedCursor()
 
 	// Print writes one grapheme cluster of the given cell width at the cursor,
 	// handling autowrap, insert mode and wide-character repair.

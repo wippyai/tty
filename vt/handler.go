@@ -50,6 +50,9 @@ func (t *Terminal) Print(cluster string) {
 	}
 	w := text.ClusterWidth(cluster)
 	if w <= 0 {
+		// A zero-width cluster that arrives in a later read joins the
+		// preceding cell.
+		t.scr.Print(cluster, 0)
 		return
 	}
 	t.lastRune = cluster
@@ -128,6 +131,8 @@ func (t *Terminal) escPlain(final byte) {
 		t.scr.SetTabStop()
 	case 'c':
 		t.fullReset()
+	case 'Z':
+		t.replyString(primaryAttributes)
 	case '=':
 		t.modes.ApplicationKeypad = true
 	case '>':
@@ -214,7 +219,8 @@ func (t *Terminal) softReset() {
 	t.modes.LinefeedNewline = false
 	t.resetCharsets()
 	t.resetMargins()
-	t.saved = [2]savedState{}
+	t.saved[t.bufferIndex()] = savedState{}
+	t.scr.ForgetSavedCursor()
 }
 
 // fullReset implements RIS.
@@ -229,7 +235,9 @@ func (t *Terminal) fullReset() {
 	t.palette = map[int]text.Color{}
 	t.lastRune = ""
 	t.lastMouseValid = false
+	t.saved = [2]savedState{}
 	t.scr.EraseDisplay(screen.EraseAll)
+	t.scr.ClearScrollback()
 	t.scr.ClearTabStop(true)
 	for x := 8; x < t.cols; x += 8 {
 		t.scr.MoveTo(x, 0)

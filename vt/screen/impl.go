@@ -186,6 +186,8 @@ func (s *screen) SaveCursor() {
 	}
 }
 
+func (s *screen) ForgetSavedCursor() { s.buf().saved = savedCursor{} }
+
 func (s *screen) RestoreCursor() {
 	sv := s.buf().saved
 	if !sv.valid {
