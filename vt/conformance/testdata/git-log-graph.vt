@@ -1,0 +1,22 @@
+*   [33ma22adee[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;33mtag: v1.0.0[m[33m)[m Merge branch 'bugfix'
+[31m|[m[32m\[m  
+[31m|[m * [33m8fc393b[m[33m ([m[1;32mbugfix[m[33m)[m bugfix: step 3 of the change with a longer message to wrap the line
+[31m|[m * [33m70aa181[m bugfix: step 2 of the change with a longer message to wrap the line
+[31m|[m * [33m9572bfa[m bugfix: step 1 of the change with a longer message to wrap the line
+* [32m|[m [33ma57b1d6[m main: work while bugfix is open
+[32m|[m[32m/[m  
+*   [33mfe5006f[m Merge branch 'feature-two'
+[33m|[m[34m\[m  
+[33m|[m * [33mbccac32[m[33m ([m[1;32mfeature-two[m[33m)[m feature-two: step 3 of the change with a longer message to wrap the line
+[33m|[m * [33me5f1661[m feature-two: step 2 of the change with a longer message to wrap the line
+[33m|[m * [33m38a2478[m feature-two: step 1 of the change with a longer message to wrap the line
+* [34m|[m [33m3bac706[m main: work while feature-two is open
+[34m|[m[34m/[m  
+*   [33mf500900[m Merge branch 'feature-one'
+[35m|[m[36m\[m  
+[35m|[m * [33m7581fe3[m[33m ([m[1;32mfeature-one[m[33m)[m feature-one: step 3 of the change with a longer message to wrap the line
+[35m|[m * [33md52271f[m feature-one: step 2 of the change with a longer message to wrap the line
+[35m|[m * [33m6af6369[m feature-one: step 1 of the change with a longer message to wrap the line
+* [36m|[m [33mc61054b[m main: work while feature-one is open
+[36m|[m[36m/[m  
+* [33m80d85e4[m initial commit

@@ -1,0 +1,18 @@
+total 48
+-rw-r--r-- 1 wolfy-j wolfy-j  396 2026-01-01 22:04 Makefile
+-rw-r--r-- 1 wolfy-j wolfy-j  433 2026-01-01 22:04 README.md
+-rw-r--r-- 1 wolfy-j wolfy-j  618 2026-01-01 22:04 [0m[01;31marchive.tar.gz[0m
+lrwxrwxrwx 1 wolfy-j wolfy-j   14 2026-10-03 12:16 [40;31;01mbroken-link[0m -> [40;31;01mmissing-target[0m
+-rw-r--r-- 1 wolfy-j wolfy-j  433 2026-01-01 22:04 data.json
+drwxr-xr-x 2 wolfy-j wolfy-j 4096 2026-01-01 22:04 [01;34mdocs[0m
+-rw-r--r-- 1 wolfy-j wolfy-j  433 2026-01-01 22:04 [01;35mimage.png[0m
+lrwxrwxrwx 1 wolfy-j wolfy-j    7 2026-10-03 12:16 [01;36mlink-to-main[0m -> main.go
+-rw-r--r-- 1 wolfy-j wolfy-j  359 2026-01-01 22:04 main.go
+-rw------- 1 wolfy-j wolfy-j  433 2026-01-01 22:04 notes.txt
+-rw-r--r-- 1 wolfy-j wolfy-j  507 2026-01-01 22:04 [01;31mrelease.zip[0m
+-rwxr-xr-x 1 wolfy-j wolfy-j  322 2026-01-01 22:04 [01;32mrun.sh[0m
+drwxr-xr-x 3 wolfy-j wolfy-j 4096 2026-01-01 22:04 [01;34msrc[0m
+-rwxr-xr-x 1 wolfy-j wolfy-j  248 2026-01-01 22:04 [01;32mtool[0m
+Makefile        [0m[40;31;01mbroken-link[0m@  [01;35mimage.png[0m      notes.txt    [01;34msrc[0m/
+README.md       data.json     [01;36mlink-to-main[0m@  [01;31mrelease.zip[0m  [01;32mtool[0m*
+[01;31marchive.tar.gz[0m  [01;34mdocs[0m/         main.go        [01;32mrun.sh[0m*
