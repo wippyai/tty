@@ -48,7 +48,23 @@ const (
 )
 
 // Screen is the display state of one terminal. Methods operate on the active
-// buffer; Alt switches buffers. All coordinates are zero-based.
+// buffer; UseAlternate switches buffers. All coordinates are zero-based.
+//
+// Behavior notes:
+//   - Counts n < 1 passed to Tab (0), InsertChars, DeleteChars, EraseChars,
+//     InsertLines, DeleteLines, ScrollUp and ScrollDown are treated as 1.
+//   - Any cursor movement, erase, character or line insert/delete clears the
+//     pending wrap flag; Print consumes it.
+//   - SetOrigin and SetScrollRegion move the cursor to the home position, as
+//     DECOM and DECSTBM do. InsertLines and DeleteLines move the cursor to
+//     column 0 and are ignored outside the scrolling region.
+//   - Erased, scrolled-in and inserted blank cells carry the pen's background
+//     color only (background color erase).
+//   - Print with width 0 appends the cluster to the preceding cell.
+//   - The cursor is shared between the buffers; the saved cursor (DECSC) is
+//     kept per buffer.
+//   - UseAlternate's clear flag clears the alternate buffer on entry and on
+//     exit (1049 clears on entry, 1047 on exit).
 type Screen interface {
 	Size() (cols, rows int)
 	// Resize changes the grid; the primary buffer reflows soft-wrapped lines.
@@ -56,31 +72,31 @@ type Screen interface {
 
 	Cursor() Cursor
 	SetCursor(c Cursor)
-	MoveTo(x, y int)    // absolute, clamped (honors origin mode via SetOrigin)
-	MoveBy(dx, dy int)  // relative, clamped to the scrolling region
-	SaveCursor()        // DECSC
-	RestoreCursor()     // DECRC
+	MoveTo(x, y int)   // absolute, clamped (honors origin mode via SetOrigin)
+	MoveBy(dx, dy int) // relative, clamped to the scrolling region
+	SaveCursor()       // DECSC
+	RestoreCursor()    // DECRC
 
 	// Print writes one grapheme cluster of the given cell width at the cursor,
 	// handling autowrap, insert mode and wide-character repair.
 	Print(cluster string, width int)
-	LineFeed()          // index, scrolling the region when at its bottom
-	ReverseIndex()      // RI
+	LineFeed()     // index, scrolling the region when at its bottom
+	ReverseIndex() // RI
 	CarriageReturn()
 	Backspace()
-	Tab(n int)          // forward tab stops; negative moves backward
+	Tab(n int) // forward tab stops; negative moves backward
 	SetTabStop()
 	ClearTabStop(all bool)
 
 	EraseDisplay(mode EraseMode)
 	EraseLine(mode EraseMode)
-	EraseChars(n int)   // ECH
-	InsertChars(n int)  // ICH
-	DeleteChars(n int)  // DCH
-	InsertLines(n int)  // IL
-	DeleteLines(n int)  // DL
-	ScrollUp(n int)     // SU
-	ScrollDown(n int)   // SD
+	EraseChars(n int)                // ECH
+	InsertChars(n int)               // ICH
+	DeleteChars(n int)               // DCH
+	InsertLines(n int)               // IL
+	DeleteLines(n int)               // DL
+	ScrollUp(n int)                  // SU
+	ScrollDown(n int)                // SD
 	SetScrollRegion(top, bottom int) // DECSTBM; bottom < 0 means last row
 	SetOrigin(enabled bool)          // DECOM
 	SetAutowrap(enabled bool)        // DECAWM
@@ -93,11 +109,26 @@ type Screen interface {
 
 	// Scrollback holds lines scrolled off the primary buffer's top.
 	ScrollbackLen() int
-	ScrollbackLine(i int) []Cell // 0 is the oldest retained line
+	ScrollbackLine(i int) []Cell  // 0 is the oldest retained line
 	SetScrollbackLimit(lines int) // live; trims oldest lines immediately
 	ClearScrollback()
 
-	// Line returns the visible row y of the active buffer.
+	// ScrollbackLimit returns the current scrollback limit.
+	ScrollbackLimit() int
+	// ScrollbackLineWrapped reports whether scrollback line i continues onto
+	// the next line (soft wrap).
+	ScrollbackLineWrapped(i int) bool
+
+	// Origin, Autowrap and InsertMode report the modes set through the
+	// matching setters.
+	Origin() bool
+	Autowrap() bool
+	InsertMode() bool
+	// ScrollRegion returns the zero-based inclusive scrolling region rows.
+	ScrollRegion() (top, bottom int)
+
+	// Line returns the visible row y of the active buffer. The slice aliases
+	// screen storage and is valid until the next mutating call.
 	Line(y int) []Cell
 	// LineWrapped reports whether row y continues onto the next row (soft wrap).
 	LineWrapped(y int) bool
