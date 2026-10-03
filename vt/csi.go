@@ -234,6 +234,10 @@ func (t *Terminal) csiGreater(p parser.Params, final byte) {
 		}
 	case 'u':
 		t.kittyPush(p.Get(0, 0))
+	case 'm':
+		if p.Get(0, 0) == 4 {
+			t.modes.ModifyOtherKeys = max(0, min(p.Get(1, 0), 2))
+		}
 	}
 }
 

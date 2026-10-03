@@ -25,6 +25,7 @@ type Modes struct {
 	MouseTracking      MouseTracking
 	MouseEncoding      MouseEncoding
 	KittyKeyboardFlags int // current flags of the kitty keyboard protocol stack
+	ModifyOtherKeys    int // xterm modifyOtherKeys level 0 to 2 (CSI > 4 ; n m)
 }
 
 // MouseTracking is the active mouse reporting mode (9, 1000, 1002, 1003).

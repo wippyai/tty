@@ -31,7 +31,7 @@ var funcKeys = map[rune]funcKey{
 	input.KeyKpUp: {final: 'A'}, input.KeyKpDown: {final: 'B'}, input.KeyKpRight: {final: 'C'},
 	input.KeyKpLeft: {final: 'D'}, input.KeyKpBegin: {final: 'E'}, input.KeyKpEnd: {final: 'F'},
 	input.KeyKpHome: {final: 'H'},
-	input.KeyF1:     {final: 'P'}, input.KeyF2: {final: 'Q'}, input.KeyF3: {num: 13}, input.KeyF4: {final: 'S'},
+	input.KeyF1:     {final: 'P'}, input.KeyF2: {final: 'Q'}, input.KeyF3: {final: 'R', num: 13}, input.KeyF4: {final: 'S'},
 	input.KeyFind: {num: 1}, input.KeyInsert: {num: 2}, input.KeyDelete: {num: 3}, input.KeySelect: {num: 4},
 	input.KeyPgUp: {num: 5}, input.KeyPgDown: {num: 6},
 	input.KeyKpInsert: {num: 2}, input.KeyKpDelete: {num: 3}, input.KeyKpPgUp: {num: 5}, input.KeyKpPgDown: {num: 6},
@@ -159,7 +159,31 @@ func (t *Terminal) encodeKey(k input.Key, release bool) string {
 	if release {
 		return ""
 	}
+	if t.modes.ModifyOtherKeys == 2 {
+		if s := t.modifiedKey(k); s != "" {
+			return s
+		}
+	}
 	return t.legacyKey(k)
+}
+
+// modifiedKey encodes a modified character key as CSI 27 ; modifiers ; code ~
+// (modifyOtherKeys level 2). Named keys and the keys with a legacy control
+// encoding are not included.
+func (t *Terminal) modifiedKey(k input.Key) string {
+	mods := xtermModBits(k.Mod)
+	if mods == 0 || k.Code <= 0 || k.Code >= input.KeyExtended {
+		return ""
+	}
+	switch k.Code {
+	case input.KeyEnter, input.KeyTab, input.KeyBackspace, input.KeyEscape, input.KeySpace:
+		return ""
+	}
+	code := k.Code
+	if k.Mod&input.ModShift != 0 && k.ShiftedCode != 0 {
+		code = k.ShiftedCode
+	}
+	return "\x1b[27;" + strconv.Itoa(mods+1) + ";" + strconv.Itoa(int(code)) + "~"
 }
 
 func (t *Terminal) cursorIntro() string {
@@ -253,7 +277,7 @@ func (t *Terminal) legacyKey(k input.Key) string {
 }
 
 func (t *Terminal) legacyFuncKey(k input.Key, fk funcKey, mods int) string {
-	if fk.num != 0 {
+	if fk.final == 0 {
 		if mods == 0 {
 			return "\x1b[" + strconv.Itoa(fk.num) + "~"
 		}
@@ -303,6 +327,9 @@ func (t *Terminal) kittyKey(k input.Key, release bool, flags int) (string, bool)
 
 	if fk, ok := funcKeys[k.Code]; ok && !isKeypad(k.Code) {
 		if event == 1 && modField == 1 {
+			if k.Code == input.KeyF3 {
+				return "\x1b[13~", true
+			}
 			return "", false
 		}
 		return kittyFuncSeq(fk, modField, event), true
