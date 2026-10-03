@@ -36,8 +36,10 @@ type Handler interface {
 	CSI(prefix byte, params Params, intermediates []byte, final byte)
 	// ESC dispatches an escape sequence with its intermediates and final byte.
 	ESC(intermediates []byte, final byte)
-	// OSC delivers a complete operating system command (data excludes the terminator).
-	OSC(data []byte)
+	// OSC delivers a complete operating system command (data excludes the
+	// terminator). bel reports a BEL terminator; otherwise the string ended
+	// with ST (ESC followed by backslash).
+	OSC(data []byte, bel bool)
 	// DCS delivers a complete device control string.
 	DCS(prefix byte, params Params, intermediates []byte, final byte, data []byte)
 	// APC delivers a complete application program command (kitty graphics uses APC G).

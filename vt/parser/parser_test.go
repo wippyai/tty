@@ -259,7 +259,7 @@ type paramsCapture struct{ out *Params }
 func (paramsCapture) Print(string)                           {}
 func (paramsCapture) Execute(byte)                           {}
 func (paramsCapture) ESC([]byte, byte)                       {}
-func (paramsCapture) OSC([]byte)                             {}
+func (paramsCapture) OSC([]byte, bool)                       {}
 func (paramsCapture) DCS(byte, Params, []byte, byte, []byte) {}
 func (paramsCapture) APC([]byte)                             {}
 func (c paramsCapture) CSI(_ byte, p Params, _ []byte, _ byte) {

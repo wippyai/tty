@@ -31,7 +31,7 @@ func (r *recorder) add(f string, a ...any) { r.ev = append(r.ev, fmt.Sprintf(f, 
 func (r *recorder) Print(c string)       { r.add("P %q", c) }
 func (r *recorder) Execute(b byte)       { r.add("X %02x", b) }
 func (r *recorder) ESC(i []byte, f byte) { r.add("ESC %q %c", i, f) }
-func (r *recorder) OSC(d []byte)         { r.add("OSC %q", d) }
+func (r *recorder) OSC(d []byte, _ bool) { r.add("OSC %q", d) }
 func (r *recorder) APC(d []byte)         { r.add("APC %q", d) }
 func (r *recorder) CSI(pre byte, p Params, i []byte, f byte) {
 	r.add("CSI %q [%s] %q %c", pre, fmtParams(p), i, f)

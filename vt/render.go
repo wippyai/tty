@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/wippyai/tty/text"
+	"github.com/wippyai/tty/vt/screen"
 )
 
 // RenderRow renders visible row y as an ANSI string with minimal SGR
@@ -16,7 +17,13 @@ func (t *Terminal) RenderRow(y int) string {
 	if y < 0 || y >= t.rows {
 		return ""
 	}
-	cells := t.scr.Line(y)
+	return RenderLine(t.scr.Line(y))
+}
+
+// RenderLine renders cells as an ANSI string with minimal SGR transitions and
+// OSC 8 hyperlinks. The result ends with the style reset and any open link
+// closed.
+func RenderLine(cells []screen.Cell) string {
 	var b strings.Builder
 	var cur text.Style
 	link := ""
@@ -45,4 +52,18 @@ func (t *Terminal) RenderRow(y int) string {
 	}
 	b.WriteString(text.Style{}.Diff(cur))
 	return b.String()
+}
+
+// TrimLine returns cells without the trailing cells that are blank and carry
+// the default style and no link, so a line renders to its visible extent.
+func TrimLine(cells []screen.Cell) []screen.Cell {
+	end := len(cells)
+	for end > 0 {
+		c := cells[end-1]
+		if (c.Cluster != "" && c.Cluster != " ") || !c.Style.IsZero() || c.Link != "" {
+			break
+		}
+		end--
+	}
+	return cells[:end]
 }

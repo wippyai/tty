@@ -89,6 +89,11 @@ type Options struct {
 	// Reply receives bytes the terminal sends back to the child (DA, DSR,
 	// OSC color queries, kitty keyboard reports, encoded input).
 	Reply func([]byte)
+	// Colors supplies the default foreground, background and cursor colors
+	// each time the child queries them (OSC 10/11/12). A zero color selects
+	// the color set with SetColors or the built-in default. Colors set by the
+	// child itself take precedence.
+	Colors func() (fg, bg, cursor text.Color)
 	// Title is called when the child sets the window title (OSC 0/2).
 	Title func(string)
 	// Clipboard is called for OSC 52 writes; nil ignores them.

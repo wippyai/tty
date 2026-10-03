@@ -3,6 +3,7 @@
 package vt
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -71,6 +72,8 @@ func TestKittyStackDepth(t *testing.T) {
 func TestOSCColorQueries(t *testing.T) {
 	h := newHarness(t, 10, 2)
 	h.write("\x1b]10;?\x07")
+	assert.Equal(t, "\x1b]10;rgb:e5e5/e5e5/e5e5\x07", h.take())
+	h.write("\x1b]10;?\x1b\\")
 	assert.Equal(t, "\x1b]10;rgb:e5e5/e5e5/e5e5\x1b\\", h.take())
 	h.term.SetColors(text.RGB(0x12, 0x34, 0x56), text.RGB(0xff, 0, 0), text.RGB(0, 0xff, 0))
 	h.write("\x1b]10;?\x1b\\\x1b]11;?\x1b\\\x1b]12;?\x1b\\")
@@ -81,6 +84,26 @@ func TestOSCColorQueries(t *testing.T) {
 	assert.Equal(t, "\x1b]11;rgb:0000/8080/ffff\x1b\\", h.take())
 	h.write("\x1b]11;#102030\x1b\\\x1b]11;?\x1b\\")
 	assert.Equal(t, "\x1b]11;rgb:1010/2020/3030\x1b\\", h.take())
+}
+
+func TestOSCColorProvider(t *testing.T) {
+	fg, bg := text.RGB(1, 2, 3), text.RGB(4, 5, 6)
+	var replies []string
+	term := New(Options{
+		Cols: 10, Rows: 2,
+		Reply:  func(b []byte) { replies = append(replies, string(b)) },
+		Colors: func() (text.Color, text.Color, text.Color) { return fg, bg, text.Color{} },
+	})
+	query := func(s string) string {
+		replies = nil
+		_, _ = term.Write([]byte(s))
+		return strings.Join(replies, "")
+	}
+	assert.Equal(t, "\x1b]10;rgb:0101/0202/0303\x07\x1b]11;rgb:0404/0505/0606\x07", query("\x1b]10;?\x07\x1b]11;?\x07"))
+	assert.Equal(t, "\x1b]12;rgb:e5e5/e5e5/e5e5\x1b\\", query("\x1b]12;?\x1b\\"))
+	bg = text.RGB(7, 8, 9)
+	assert.Equal(t, "\x1b]11;rgb:0707/0808/0909\x1b\\", query("\x1b]11;?\x1b\\"))
+	assert.Equal(t, "\x1b]11;rgb:0000/8080/ffff\x1b\\", query("\x1b]11;rgb:00/80/ff\x1b\\\x1b]11;?\x1b\\"))
 }
 
 func TestOSCPalette(t *testing.T) {

@@ -132,7 +132,7 @@ func (d *discard) Print(c string)                                   { d.n += len
 func (d *discard) Execute(byte)                                     { d.n++ }
 func (d *discard) CSI(_ byte, p Params, _ []byte, _ byte)           { d.n += p.Len() }
 func (d *discard) ESC([]byte, byte)                                 { d.n++ }
-func (d *discard) OSC(b []byte)                                     { d.n += len(b) }
+func (d *discard) OSC(b []byte, _ bool)                             { d.n += len(b) }
 func (d *discard) DCS(_ byte, _ Params, _ []byte, _ byte, b []byte) { d.n += len(b) }
 func (d *discard) APC(b []byte)                                     { d.n += len(b) }
 

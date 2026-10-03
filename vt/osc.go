@@ -18,7 +18,11 @@ var (
 )
 
 // OSC dispatches an operating system command.
-func (t *Terminal) OSC(data []byte) {
+func (t *Terminal) OSC(data []byte, bel bool) {
+	term := "\x1b\\"
+	if bel {
+		term = "\x07"
+	}
 	s := string(data)
 	num, rest, _ := strings.Cut(s, ";")
 	n, err := strconv.Atoi(num)
@@ -32,15 +36,15 @@ func (t *Terminal) OSC(data []byte) {
 			t.opts.Title(rest)
 		}
 	case 4:
-		t.oscPalette(rest)
+		t.oscPalette(rest, term)
 	case 8:
 		t.oscHyperlink(rest)
 	case 10:
-		t.oscDynamicColors(10, rest)
+		t.oscDynamicColors(10, rest, term)
 	case 11:
-		t.oscDynamicColors(11, rest)
+		t.oscDynamicColors(11, rest, term)
 	case 12:
-		t.oscDynamicColors(12, rest)
+		t.oscDynamicColors(12, rest, term)
 	case 52:
 		t.oscClipboard(rest)
 	case 104:
@@ -97,7 +101,7 @@ func (t *Terminal) paletteColor(i int) text.Color {
 	return indexedColor(i)
 }
 
-func (t *Terminal) oscPalette(rest string) {
+func (t *Terminal) oscPalette(rest, term string) {
 	f := strings.Split(rest, ";")
 	for i := 0; i+1 < len(f); i += 2 {
 		idx, err := strconv.Atoi(f[i])
@@ -105,7 +109,7 @@ func (t *Terminal) oscPalette(rest string) {
 			continue
 		}
 		if f[i+1] == "?" {
-			t.replyString(fmt.Sprintf("\x1b]4;%d;%s\x1b\\", idx, formatXColor(t.paletteColor(idx))))
+			t.replyString(fmt.Sprintf("\x1b]4;%d;%s%s", idx, formatXColor(t.paletteColor(idx)), term))
 			continue
 		}
 		if c, ok := parseXColor(f[i+1]); ok {
@@ -116,7 +120,7 @@ func (t *Terminal) oscPalette(rest string) {
 
 // oscDynamicColors handles OSC 10, 11 and 12; consecutive parameters address
 // consecutive dynamic colors.
-func (t *Terminal) oscDynamicColors(first int, rest string) {
+func (t *Terminal) oscDynamicColors(first int, rest, term string) {
 	for i, v := range strings.Split(rest, ";") {
 		slot := first + i
 		if slot > 12 {
@@ -135,15 +139,33 @@ func (t *Terminal) oscDynamicColors(first int, rest string) {
 		if v == "?" {
 			c := *cur
 			if c.IsNone() {
+				c = t.providedColor(slot)
+			}
+			if c.IsNone() {
 				c = def
 			}
-			t.replyString(fmt.Sprintf("\x1b]%d;%s\x1b\\", slot, formatXColor(c)))
+			t.replyString(fmt.Sprintf("\x1b]%d;%s%s", slot, formatXColor(c), term))
 			continue
 		}
 		if c, ok := parseXColor(v); ok {
 			*cur = c
 		}
 	}
+}
+
+// providedColor asks Options.Colors for the dynamic color of slot 10, 11 or 12.
+func (t *Terminal) providedColor(slot int) text.Color {
+	if t.opts.Colors == nil {
+		return text.Color{}
+	}
+	fg, bg, cursor := t.opts.Colors()
+	switch slot {
+	case 10:
+		return fg
+	case 11:
+		return bg
+	}
+	return cursor
 }
 
 func formatXColor(c text.Color) string {

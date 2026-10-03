@@ -286,13 +286,13 @@ func (p *Parser) appendString(b byte, limit int) {
 }
 
 // endString dispatches the open string, if complete, and releases its buffer.
-func (p *Parser) endString() { p.finishString(p.str) }
+func (p *Parser) endString() { p.finishString(p.str, false) }
 
-func (p *Parser) finishString(kind state) {
+func (p *Parser) finishString(kind state, bel bool) {
 	if !p.over {
 		switch kind {
 		case stOSC:
-			p.h.OSC(p.buf)
+			p.h.OSC(p.buf, bel)
 		case stAPC:
 			p.h.APC(p.buf)
 		case stDCSPass:
@@ -383,7 +383,7 @@ func (p *Parser) step(b byte) {
 	case stOSC:
 		switch {
 		case b == 0x07:
-			p.finishString(stOSC)
+			p.finishString(stOSC, true)
 			p.state = stGround
 		case b >= 0x20:
 			p.appendString(b, MaxOSCLen)
