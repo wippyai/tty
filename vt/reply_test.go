@@ -145,3 +145,17 @@ func TestWriteChunkedInput(t *testing.T) {
 	assert.Equal(t, "abc", h.row(0))
 	assert.Equal(t, text.Basic(1), h.term.Screen().Line(0)[1].Style.Fg)
 }
+
+// Claude Code titles start with U+2733 (E2 9C B3). The 0x9C continues the
+// rune, so the title stays whole and nothing reaches the grid, also when the
+// PTY delivers the sequence in pieces.
+func TestOSCTitleWithMultibyteRuneStaysOffTheGrid(t *testing.T) {
+	sequence := "\x1b]0;✳ Bee MCP tools\x07xy"
+	for cut := 0; cut < len(sequence); cut++ {
+		h := newHarness(t, 30, 2)
+		h.write(sequence[:cut])
+		h.write(sequence[cut:])
+		assert.Equal(t, "✳ Bee MCP tools", h.term.Title(), "cut at %d", cut)
+		assert.Equal(t, "xy", strings.TrimRight(RenderLine(h.term.Screen().Line(0)), " "), "cut at %d", cut)
+	}
+}
